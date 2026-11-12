@@ -9,12 +9,14 @@ const contador = document.getElementById("textoResultado");
 let personajes = [];
 
 async function cargar() {
-    const resp = await fetch(apiHarry);
-    personajes = await resp.json();
-    for (let i = 0; i < personajes.length; i++) {
-        divFichas.appendChild(hacerFicha(personajes[i]));
+    contador.textContent = "Cargando los personajes, espera tantito...";
+    try {
+        const resp = await fetch(apiHarry);
+        personajes = await resp.json();
+        buscar();
+    } catch (error) {
+        contador.textContent = "Ups, no se pudo conectar con la api :(";
     }
-    contador.textContent = "son " + personajes.length + " personajes";
 }
 
 function hacerFicha(pj) {
@@ -46,5 +48,38 @@ function hacerFicha(pj) {
     `;
     return col;
 }
+
+function buscar() {
+    const txt = inputBusqueda.value.toLowerCase();
+    const casa = selectCasa.value;
+    let cuantos = 0;
+
+    divFichas.innerHTML = "";
+
+    for (let i = 0; i < personajes.length; i++) {
+        const pj = personajes[i];
+        const ficha = hacerFicha(pj);
+        const textoFicha = ficha.textContent.toLowerCase();
+
+        if (casa !== "" && pj.house !== casa) {
+            continue;
+        }
+        if (!textoFicha.includes(txt)) {
+            continue;
+        }
+
+        divFichas.appendChild(ficha);
+        cuantos++;
+    }
+
+    if (cuantos === 0) {
+        contador.textContent = "No encontre nada con eso :/";
+    } else {
+        contador.textContent = "Van " + cuantos + " de " + personajes.length + " personajes";
+    }
+}
+
+inputBusqueda.addEventListener("input", buscar);
+selectCasa.addEventListener("change", buscar);
 
 cargar();
